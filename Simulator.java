@@ -29,6 +29,23 @@ public class Simulator {
     public void run(){
         while(currentTime < simulationEndTime){
             releaseNewJobs();
+
+            // core part, a job is selected based on the chosen algorithm that implements on the Scheduler interface.
+            Job currentJob = scheduler.selectNextJob(readyQueue, currentTime);
+
+            if (currentJob != null) {
+                currentJob.runFor(1);
+
+                if (currentJob.getRemainingExecutionTime() <= 0){
+                    readyQueue.remove(currentJob);
+                    System.out.println("Time " + currentTime + ": Job " + currentJob.getTaskId() + " finished");
+                }
+                // deadline miss
+                if (currentTime > currentJob.getAbsoluteDeadline() && currentJob.getRemainingExecutionTime() > 0){
+                    System.out.println("Time " + currentTime + " Job " + currentJob.getTaskId() + " missed its deadline");
+                }
+            }
+
             currentTime++;
         }
     }
@@ -39,8 +56,12 @@ public class Simulator {
                 Job job = new Job(task, currentTime);
                 readyQueue.add(job);
                 task.updateNextReleaseTime();
+                System.out.println("current time is: " + currentTime + " and Job " + job.getTaskId() + " is added to the readyQueue");
+                System.out.println("readyQueue size: " + readyQueue.size());
+
 
             }
         }
+
     }
 }
