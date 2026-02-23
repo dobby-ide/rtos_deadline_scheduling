@@ -2,13 +2,13 @@ public class Job {
     Task parentTask;
     int releaseTime;
     int absoluteDeadline;
-    int remainingExecutionTime;
+    int remainingExecutionTime; // while being technically the execution time of a job, it will serve to understand when a job has finished the execution, eventually be decreased for each tick
 
     public Job(Task parent, int releaseTime) {
         this.parentTask = parent;
         this.releaseTime = releaseTime;
         this.absoluteDeadline = releaseTime + parent.relativeDeadline;
-        this.remainingExecutionTime = parent.executionTime;
+        this.remainingExecutionTime = parent.getExecutionTime();
     }
 
 

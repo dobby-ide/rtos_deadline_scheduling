@@ -3,12 +3,12 @@
 
 public class Task {
     int id;
-    int arrivalTime;
+    int arrivalTime; // offset
 
     int period; // the frequency of releasing new jobs
 
     int relativeDeadline;
-    int executionTime;
+    private int executionTime;  // time that every job will take as running (being processed)
 
     private int nextReleaseTime;
 
@@ -23,6 +23,18 @@ public class Task {
 
     public int getPeriod() {
         return period;
+    }
+
+    public int getExecutionTime() {
+        return executionTime;
+    }
+
+    public int getNextReleaseTime() {
+        return nextReleaseTime;
+    }
+
+    public void updateNextReleaseTime(){
+        nextReleaseTime += period;
     }
 }
 
