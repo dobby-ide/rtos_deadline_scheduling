@@ -11,6 +11,11 @@ public class Job {
         this.remainingExecutionTime = parent.getExecutionTime();
     }
 
+    public void runFor(int timeUnits){
+        remainingExecutionTime -= timeUnits;
+        if(remainingExecutionTime < 0) remainingExecutionTime = 0;
+
+    }
 
     // Task parent period is important when Rate Monotonic is chosen as algorithm to decide which job goes first
     public int getTaskPeriod(){
@@ -18,5 +23,13 @@ public class Job {
     }
     public int getTaskId(){
         return parentTask.id;
+    }
+
+    public int getRemainingExecutionTime() {
+        return remainingExecutionTime;
+    }
+
+    public int getAbsoluteDeadline() {
+        return absoluteDeadline;
     }
 }
