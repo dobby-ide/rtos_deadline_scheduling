@@ -21,6 +21,9 @@ public class Job {
     public int getTaskPeriod(){
         return this.parentTask.getPeriod();
     }
+    public int getTaskRelativeDeadline(){
+        return this.parentTask.getRelativeDeadline();
+    }
     public int getTaskId(){
         return parentTask.id;
     }
