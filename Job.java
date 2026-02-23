@@ -11,6 +11,11 @@ public class Job {
         this.remainingExecutionTime = parent.executionTime;
     }
 
+
+    // Task parent period is important when Rate Monotonic is chosen as algorithm to decide which job goes first
+    public int getTaskPeriod(){
+        return this.parentTask.getPeriod();
+    }
     public int getTaskId(){
         return parentTask.id;
     }
