@@ -21,6 +21,10 @@ public class Task {
         this.nextReleaseTime = arrivalTime;
     }
 
+    public int getRelativeDeadline() {
+        return relativeDeadline;
+    }
+
     public int getPeriod() {
         return period;
     }
@@ -31,6 +35,10 @@ public class Task {
 
     public int getNextReleaseTime() {
         return nextReleaseTime;
+    }
+
+    public int getArrivalTime() {
+        return arrivalTime;
     }
 
     public void updateNextReleaseTime(){
