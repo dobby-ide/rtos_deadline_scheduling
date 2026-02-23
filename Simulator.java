@@ -28,8 +28,19 @@ public class Simulator {
 
     public void run(){
         while(currentTime < simulationEndTime){
-
+            releaseNewJobs();
             currentTime++;
+        }
+    }
+    // updates readyQueue and modifies nextReleaseTime in tasks. New jobs are deployed from tasks according to each task period, arrival time etc.
+    private void releaseNewJobs(){
+        for (Task task : tasks){
+            if (currentTime == task.getNextReleaseTime()){
+                Job job = new Job(task, currentTime);
+                readyQueue.add(job);
+                task.updateNextReleaseTime();
+
+            }
         }
     }
 }
