@@ -1,4 +1,4 @@
-public class Event {
+public class Event implements Comparable<Event>{
     private final int time;
     private final EventType type;
     private final Task task;
@@ -36,6 +36,10 @@ public class Event {
         return job;
     }
 
+    @Override
+    public int compareTo(Event other) {
+        return Integer.compare(this.time, other.time);
+    }
     @Override
     public String toString() {
         return "Event{" +
