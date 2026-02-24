@@ -73,34 +73,35 @@ public class Simulator {
         }
 
         Job highest = scheduler.selectNextJob(readyQueue, currentTime);
-
-        if (highest != runningJob) {
+        if (runningJob == null) {
+            scheduleNextJobIfIdle();
+        } else if (highest != null && highest != runningJob) {
             preempt(highest);
         }
     }
 
     private void preempt(Job newJob) {
+        if (runningJob == null || newJob == null || newJob == runningJob) return;
 
-        //  Calculate executed time
+        // 1. Calculate executed time for current running job
         int executed = currentTime - runningJob.getLastStartTime();
-        runningJob.setRemainingExecutionTime(
-                runningJob.getRemainingExecutionTime() - executed
-        );
+        totalBusyTime += executed;
+        runningJob.setRemainingExecutionTime(runningJob.getRemainingExecutionTime() - executed);
 
-        //  Remove old completion event
-        eventQueue.removeIf(e ->
-                e.getType() == EventType.COMPLETION &&
-                        e.getJob() == runningJob);
+        // 2. Remove its completion event
+        eventQueue.removeIf(e -> e.getType() == EventType.COMPLETION && e.getJob() == runningJob);
 
-        //  Put old job back in ready queue
-        readyQueue.add(runningJob);
+        // 3. Put old job back in ready queue if it still has work
+        if (runningJob.getRemainingExecutionTime() > 0 && !runningJob.isFinished()) {
+            readyQueue.add(runningJob);
+        }
 
-        //  Switch jobs
+        // 4. Switch to new job
         readyQueue.remove(newJob);
         runningJob = newJob;
         runningJob.setLastStartTime(currentTime);
 
-        //  Schedule completion for new job
+        // 5. Schedule completion for new job
         eventQueue.add(Event.createCompletionEvent(
                 currentTime + runningJob.getRemainingExecutionTime(),
                 runningJob
@@ -110,50 +111,41 @@ public class Simulator {
     private void scheduleNextJobIfIdle() {
         if (runningJob != null || readyQueue.isEmpty()) return;
 
-        runningJob = scheduler.selectNextJob(readyQueue, currentTime);
-        readyQueue.remove(runningJob);
-        if (runningJob != null) {
-            readyQueue.remove(runningJob);
-            runningJob.setLastStartTime(currentTime);
-            eventQueue.add(Event.createCompletionEvent(
-                    currentTime + runningJob.getRemainingExecutionTime(),
-                    runningJob));
-        }
+        Job nextJob = scheduler.selectNextJob(readyQueue, currentTime);
+        if (nextJob == null) return;
+
+        readyQueue.remove(nextJob); // remove only once
+        runningJob = nextJob;
+        runningJob.setLastStartTime(currentTime);
+
+        // Schedule its completion
+        eventQueue.add(Event.createCompletionEvent(
+                currentTime + runningJob.getRemainingExecutionTime(),
+                runningJob
+        ));
     }
 
     private void handleCompletion(Event event) {
-
         Job job = event.getJob();
 
-        // Calculate how much was executed in this last run
+        // Skip if this job has already been finished
+        if (job.isFinished()) return;
+        job.markFinished();
+
         int executed = currentTime - job.getLastStartTime();
-
-        // Account CPU time
         totalBusyTime += executed;
-
-        // Job is now finished
-        job.setRemainingExecutionTime(0);
+        System.out.println("total busy time so far: "+totalBusyTime);
         runningJob = null;
 
+        job.setRemainingExecutionTime(0);
         job.addFinishTime(currentTime);
 
         if (currentTime > job.getAbsoluteDeadline()) {
-
-            if (firstMissTime == null) {
-                firstMissTime = currentTime;
-            }
-
-            System.out.println("Time " + currentTime +
-                    ": Job " + job.getTaskId() +
-                    " missed its deadline!");
-
+            if (firstMissTime == null) firstMissTime = currentTime;
+            System.out.println("Time " + currentTime + ": Job " + job.getTaskId() + " missed its deadline!");
             missedJobs.add(job);
-
         } else {
-
-            System.out.println("Time " + currentTime +
-                    ": Job " + job.getTaskId() +
-                    " finished");
+            System.out.println("Time " + currentTime + ": Job " + job.getTaskId() + " finished");
         }
     }
 
@@ -161,8 +153,13 @@ public class Simulator {
     public void printReport(String schedulerName) {
         System.out.println("\n=== " + schedulerName + " Results ===\n");
 
-        // Determine feasible time (up to first missed deadline, or full simulation if none)
-        int feasibleUntil = (firstMissTime == null) ? simulationEndTime : firstMissTime;
+        // Determine feasible time: last unit before the first missed deadline
+        int feasibleUntil;
+        if (missedJobs.isEmpty()) {
+            feasibleUntil = simulationEndTime;
+        } else {
+            feasibleUntil = missedJobs.get(0).getAbsoluteDeadline() - 1;
+        }
         System.out.println("Schedule feasible from 0 to " + feasibleUntil + " units.");
 
         // Show first missed deadline, if any

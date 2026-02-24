@@ -10,6 +10,8 @@ public class Job {
     private int lastStartTime;
     private List<Integer> finishTimes = new ArrayList<>();
 
+    private boolean finished = false;
+
     public Job(Task parent, int releaseTime) {
         this.parentTask = parent;
         this.releaseTime = releaseTime;
@@ -18,6 +20,14 @@ public class Job {
         this.lastStartTime = releaseTime;
     }
 
+
+    public void markFinished() {
+        finished = true;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
     public void addFinishTime(int finishTime) {
         finishTimes.add(finishTime);
     }
